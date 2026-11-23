@@ -1,0 +1,19 @@
+ .idea/deviceManager.xml                            | 13 [32m+++++[m
+ .idea/markdown.xml                                 |  8 [32m+++[m
+ .../java/com/example/fundlink/data/model/User.kt   |  1 [32m+[m
+ .../fundlink/data/repository/AuthRepository.kt     | 14 [32m+++++[m
+ .../data/repository/StudentFundingRepository.kt    | 46 [32m++++++++++++++[m[31m-[m
+ .../fundlink/ui/adapters/ApplicationAdapter.kt     | 32 [32m+++++++++++[m
+ .../fundlink/ui/adapters/OpportunityAdapter.kt     | 33 [32m+++++++++++[m
+ .../fundlink/ui/student/MyApplicationsFragment.kt  | 32 [32m++++++++++[m[31m-[m
+ .../fundlink/ui/student/OpportunitiesFragment.kt   | 43 [32m+++++++++++++[m[31m-[m
+ .../ui/student/OpportunityDetailsFragment.kt       | 66 [32m+++++++++++++++++++++[m[31m-[m
+ .../ui/student/StudentDashboardFragment.kt         | 47 [32m++++++++++++++[m[31m-[m
+ .../main/res/layout/fragment_my_applications.xml   | 12 [32m++++[m
+ app/src/main/res/layout/fragment_opportunities.xml | 12 [32m++++[m
+ .../res/layout/fragment_opportunity_details.xml    | 26 [32m+++++++++[m
+ .../main/res/layout/fragment_student_dashboard.xml | 20 [32m+++++++[m
+ app/src/main/res/layout/item_application.xml       | 17 [32m++++++[m
+ app/src/main/res/layout/item_opportunity.xml       | 21 [32m+++++++[m
+ gradle/libs.versions.toml                          |  4 [32m+[m[31m-[m
+ 18 files changed, 439 insertions(+), 8 deletions(-)
