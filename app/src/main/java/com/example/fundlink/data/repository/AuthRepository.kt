@@ -9,18 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class AuthRepository(context: Context) {
-    private val userDao = AppDatabase.getInstance(context).userDao()
-    private val session = SessionManager(context)
-
-    suspend fun currentUser(): User? = withContext(Dispatchers.IO) {
-        val uid = session.userId()
-        if (uid == -1L) null else userDao.findById(uid)
-    }
-
-    fun logout() {
-        session.clear()
-    }
-
     private val dao = AppDatabase.getInstance(context).userDao()
     private val session = SessionManager(context)
 
@@ -38,15 +26,12 @@ class AuthRepository(context: Context) {
             }
 
             val salt = PasswordHasher.newSalt()
-            val hash = PasswordHasher.hash("Officer@123", salt)
-            userDao.insert(
-                User(
-                    email = "officer@fundlink.com",
-                    passwordHash = hash,
-                    salt = salt,
-                    fullName = "Funding Officer",
-                    role = "OFFICER"
-                )
+            val user = User(
+                fullName = name.trim(),
+                email = mail,
+                passwordHash = PasswordHasher.hash(password, salt),
+                salt = salt,
+                role = "STUDENT"
             )
 
             user.copy(id = dao.insert(user))
@@ -74,12 +59,7 @@ class AuthRepository(context: Context) {
     // Retrieve the currently logged-in user
     suspend fun currentUser(): User? = withContext(Dispatchers.IO) {
         val id = session.userId()
-
-        if (id == -1L) {
-            null
-        } else {
-            dao.findById(id)
-        }
+        if (id == -1L) null else dao.findById(id)
     }
 
     // Create the initial officer account if one does not exist

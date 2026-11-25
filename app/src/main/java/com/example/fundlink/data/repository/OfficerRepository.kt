@@ -4,85 +4,45 @@ import android.content.Context
 import com.example.fundlink.data.db.AppDatabase
 import com.example.fundlink.data.model.FundingOpportunity
 import com.example.fundlink.data.model.StudentApplication
+import com.example.fundlink.data.session.SessionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class OfficerRepository(context: Context) {
+    private val db = AppDatabase.getInstance(context)
+    private val session = SessionManager(context)
 
-    private val opportunityDao =
-        AppDatabase.getInstance(context).opportunityDao()
+    private fun requireOfficer() {
+        if (session.role() != "OFFICER") error("Officer access required")
+    }
 
-    private val applicationDao =
-        AppDatabase.getInstance(context).applicationDao()
-
-    suspend fun getActiveOpportunities(): List<FundingOpportunity> =
+    suspend fun createOpportunity(item: FundingOpportunity): Long =
         withContext(Dispatchers.IO) {
-            opportunityDao.active()
+            requireOfficer()
+            require(item.title.isNotBlank() && item.amount > 0)
+            db.opportunityDao().insert(item.copy(createdBy = session.userId(), active = true))
         }
 
-    suspend fun getApplications(): List<StudentApplication> =
+    suspend fun applications(): List<StudentApplication> = withContext(Dispatchers.IO) {
+        requireOfficer()
+        db.applicationDao().all()
+    }
+
+    suspend fun decide(id: Long, status: String, comment: String) =
         withContext(Dispatchers.IO) {
-            applicationDao.all()
-        }
-
-    suspend fun getOpportunityCount(): Int =
-        withContext(Dispatchers.IO) {
-            opportunityDao.activeCount()
-        }
-
-    suspend fun getPendingApplicationsCount(): Int =
-        withContext(Dispatchers.IO) {
-            applicationDao.pendingCount()
-        }
-
-    suspend fun addOpportunity(
-        title: String,
-        description: String,
-        amount: Double,
-        deadline: String,
-        eligibility: String,
-        officerId: Long
-    ) = withContext(Dispatchers.IO) {
-
-        opportunityDao.insert(
-            FundingOpportunity(
-                title = title,
-                description = description,
-                amount = amount,
-                deadline = deadline,
-                eligibility = eligibility,
-                createdBy = officerId
+            requireOfficer()
+            require(status == "APPROVED" || status == "REJECTED")
+            val rows = db.applicationDao().decide(
+                id, status, session.userId(), System.currentTimeMillis(), comment.trim()
             )
-        )
+            if (rows == 0) error("Application already reviewed")
+        }
+
+    suspend fun totalOpportunities(): Int = withContext(Dispatchers.IO) {
+        db.opportunityDao().activeCount()
     }
 
-    suspend fun approveApplication(
-        applicationId: Long,
-        officerId: Long,
-        comment: String
-    ) = withContext(Dispatchers.IO) {
-
-        applicationDao.decide(
-            id = applicationId,
-            status = "APPROVED",
-            by = officerId,
-            at = System.currentTimeMillis(),
-            comment = comment
-        )
-    }
-
-    suspend fun rejectApplication(
-        applicationId: Long,
-        officerId: Long,
-        comment: String
-    ) = withContext(Dispatchers.IO) {
-
-        applicationDao.decide(
-            id = applicationId,
-            status = "REJECTED",
-            by = officerId,
-            at = System.currentTimeMillis(),
-            comment = comment
-        )
+    suspend fun pendingCount(): Int = withContext(Dispatchers.IO) {
+        db.applicationDao().pendingCount()
     }
 }
