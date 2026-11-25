@@ -17,7 +17,6 @@ data class User(
     val email: String,
     val passwordHash: String,
     val salt: String,
-    val fullName: String = "",
     val role: String = "STUDENT",
     val createdAt: Long = System.currentTimeMillis()
 )
